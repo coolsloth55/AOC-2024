@@ -18,17 +18,24 @@ func main() {
 	arr1, arr2 := loadinput(f)
 
 	sortMethod := os.Getenv("SORT_METHOD")
-	distance := getDistance(arr1, arr2, sortMethod)
 
-	fmt.Printf("Distance: %d\n", distance)
+	part := os.Getenv("PART")
+	if part == "two" {
+		similarity := getSimilarity(arr1, arr2)
+		fmt.Printf("Similarity: %d\n", similarity)
+	} else if part == "three" {
+	} else {
+		distance := getDistance(arr1, arr2, sortMethod)
+		fmt.Printf("Distance: %d\n", distance)
+	}
 }
 
 func getDistance(arr1 []int, arr2 []int, method string) int {
-	if method == "counting" {
-
-	} else {
+	if method == "bubblesort" {
 		bubblesort(arr1)
 		bubblesort(arr2)
+	} else {
+		panic("no sort method")
 	}
 
 	distance := 0
@@ -36,6 +43,20 @@ func getDistance(arr1 []int, arr2 []int, method string) int {
 		distance += int(math.Abs(float64(val1 - arr2[idx])))
 	}
 	return distance
+}
+
+func getSimilarity(arr1 []int, arr2 []int) int {
+	similarity := 0
+	for _, val1 := range arr1 {
+		v1 := 0
+		for _, val2 := range arr2 {
+			if val1 == val2 {
+				v1++
+			}
+		}
+		similarity += val1 * v1
+	}
+	return similarity
 }
 
 func bubblesort(arr []int) {
