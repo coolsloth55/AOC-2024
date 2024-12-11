@@ -10,12 +10,7 @@ import (
 )
 
 func main() {
-	f := os.Getenv("INPUT_FILE")
-	if f == "" {
-		f = "input.txt"
-	}
-
-	matrix := loadinput(f)
+	matrix := loadinput()
 	safe_reports := getSafeReports(matrix)
 	fmt.Printf("Safe Reports: %d\n", safe_reports)
 }
@@ -24,46 +19,70 @@ func getSafeReports(m [][]int) int {
 	safe := 0
 
 	for i := 0; i < len(m); i++ {
-		gradual := true
-		change := map[string]int{
-			"increasing": 0,
-			"decresing":  0,
-			"noChange":   0,
-		}
-
-		for j := 0; j < len(m[i])-1; j++ {
-			diff := m[i][j+1] - m[i][j]
-
-			if diff > 0 {
-				change["increasing"]++
-			} else if diff == 0 {
-				change["noChange"]++
-			} else {
-				change["decresing"]++
-			}
-
-			if math.Abs(float64(diff)) > 3 {
-				gradual = false
-			}
-		}
-
-		noSwitch := change["increasing"] > 0 && change["decresing"] == 0 || change["increasing"] == 0 && change["decresing"] > 0
-		if gradual && noSwitch && change["noChange"] == 0 {
+		if isSafe(m[i]) {
 			safe++
+		} else if os.Getenv("PART") == "two" {
+			if isCleanedSafe(m[i]) {
+				safe++
+			}
 		}
 	}
 
 	return safe
 }
 
-func isIncreasing(a int) bool {
-	if a > 0 {
-		return true
+func isCleanedSafe(arr []int) bool {
+	safe := false
+
+	copiedArr := make([]int, len(arr))
+
+	for i := 0; i < len(copiedArr); i++ {
+		copy(copiedArr, arr)
+		newArr := remove(copiedArr, i)
+		if isSafe(newArr) {
+			safe = true
+		}
 	}
-	return false
+
+	return safe
 }
 
-func loadinput(f string) [][]int {
+func remove(slice []int, s int) []int {
+	return append(slice[:s], slice[s+1:]...)
+}
+
+func isSafe(arr []int) bool {
+	isIncreasing, isDecresing := false, false
+
+	for j := 1; j < len(arr); j++ {
+		diff := arr[j] - arr[j-1]
+
+		if math.Abs(float64(diff)) > 3 {
+			return false
+		}
+
+		if diff > 0 {
+			isIncreasing = true
+		} else if diff < 0 {
+			isDecresing = true
+		} else {
+			return false
+		}
+
+		if isIncreasing && isDecresing {
+			return false
+		}
+	}
+
+	return true
+}
+
+func loadinput() [][]int {
+	f := os.Getenv("INPUT_FILE")
+	if f == "" {
+		f = "input.txt"
+	}
+
 	var matrix [][]int
 
 	file, err := os.Open(f)
